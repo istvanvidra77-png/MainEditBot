@@ -1,0 +1,6 @@
+1) Job started: Your video job has started processing. I'll post the result when done.
+2) Upload received: Files downloaded — starting the edit/merge step now.
+3) Processing error: Something went wrong while processing your files. Please try again or contact admin.
+4) Completed: Your edited video is ready — attaching now.
+5) File too large: One or more files exceed the maximum allowed size. Please reduce size and retry.
+6) Queue notice: You're currently in position {pos} in the processing queue. Estimated wait: {eta} minutes.
