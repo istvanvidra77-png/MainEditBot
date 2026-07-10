@@ -1,0 +1,6 @@
+# Quick pip commands
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+
+# Or install individually:
+pip install moviepy discord.py aiohttp python-dotenv
