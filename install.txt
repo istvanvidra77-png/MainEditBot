@@ -1,0 +1,18 @@
+Install (Linux / macOS / Windows notes):
+
+1) Install FFmpeg
+   - macOS (homebrew): brew install ffmpeg
+   - Ubuntu/Debian: sudo apt update && sudo apt install ffmpeg
+   - Windows: download from https://ffmpeg.org/download.html and add to PATH
+
+2) Create virtualenv and install Python deps:
+   python -m venv venv
+   source venv/bin/activate  # Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+
+3) Configure:
+   cp config.json.template config.json
+   edit config.json to set discord_token or export DISCORD_TOKEN env var
+
+4) Run:
+   python discordBot.py
