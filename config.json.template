@@ -1,0 +1,8 @@
+{
+  "discord_token": "YOUR_DISCORD_BOT_TOKEN_HERE",
+  "output_dir": "output",
+  "temp_dir": "temp",
+  "max_upload_mb": 250,
+  "ffmpeg_path": "ffmpeg",   // set full path if needed
+  "log_level": "INFO"
+}
