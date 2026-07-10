@@ -1,0 +1,75 @@
+# Editor/videoEditor.py
+# Minimal VideoEditor wrapper using moviepy.
+# Requires ffmpeg installed and accessible on PATH.
+
+from moviepy.editor import VideoFileClip, concatenate_videoclips, TextClip, CompositeVideoClip, AudioFileClip
+from pathlib import Path
+import logging
+
+log = logging.getLogger("videoeditor")
+log.setLevel(logging.INFO)
+
+
+class VideoEditor:
+    def __init__(self, temp_dir="temp", output_dir="output"):
+        self.temp_dir = Path(temp_dir)
+        self.output_dir = Path(output_dir)
+        self.temp_dir.mkdir(parents=True, exist_ok=True)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+
+    def trim(self, input_path, start_time, end_time, output_name=None):
+        """Trim a clip between start_time and end_time (seconds)."""
+        input_path = str(input_path)
+        output_name = output_name or (Path(input_path).stem + "_trim.mp4")
+        out_path = self.output_dir / output_name
+        log.info("Trimming %s -> %s [%s:%s]", input_path, out_path, start_time, end_time)
+        with VideoFileClip(input_path) as clip:
+            sub = clip.subclip(start_time, end_time)
+            sub.write_videofile(str(out_path), codec="libx264", audio_codec="aac")
+        return str(out_path)
+
+    def change_speed(self, input_path, speed_factor, output_name=None):
+        """Speed up (>1.0) or slow down (<1.0) a clip."""
+        input_path = str(input_path)
+        output_name = output_name or (Path(input_path).stem + f"_speed{speed_factor}.mp4")
+        out_path = self.output_dir / output_name
+        log.info("Changing speed %s -> %s factor=%s", input_path, out_path, speed_factor)
+        with VideoFileClip(input_path) as clip:
+            sped = clip.fx(vfx_time_transform, speed_factor) if hasattr(clip, 'fx') else clip.speedx(speed_factor)
+            sped.write_videofile(str(out_path), codec="libx264", audio_codec="aac")
+        return str(out_path)
+
+    def overlay_text(self, input_path, text, fontsize=48, color='white', pos=('center', 'bottom'), duration=None, output_name=None):
+        """Overlay text over the video (basic)."""
+        input_path = str(input_path)
+        output_name = output_name or (Path(input_path).stem + "_text.mp4")
+        out_path = self.output_dir / output_name
+        log.info("Overlaying text on %s -> %s", input_path, out_path)
+        with VideoFileClip(input_path) as clip:
+            duration = duration or clip.duration
+            txt = TextClip(txt=text, fontsize=fontsize, color=color).set_duration(duration)
+            txt = txt.set_pos(pos)
+            video = CompositeVideoClip([clip, txt])
+            video.write_videofile(str(out_path), codec="libx264", audio_codec="aac")
+        return str(out_path)
+
+    def export_with_audio(self, video_path, audio_path, output_name=None, audio_start=0):
+        """Replace or add background audio to a video."""
+        video_path = str(video_path)
+        audio_path = str(audio_path)
+        output_name = output_name or (Path(video_path).stem + "_with_audio.mp4")
+        out_path = self.output_dir / output_name
+        log.info("Adding audio %s to %s -> %s", audio_path, video_path, out_path)
+        with VideoFileClip(video_path) as v:
+            a = AudioFileClip(audio_path).set_start(audio_start).set_duration(v.duration)
+            final = v.set_audio(a)
+            final.write_videofile(str(out_path), codec="libx264", audio_codec="aac")
+        return str(out_path)
+
+
+# Small helper: moviepy's speedx sometimes is enough; fallback function for older versions
+def vfx_time_transform(clip, factor):
+    try:
+        return clip.fx(lambda c: c.speedx(factor))
+    except Exception:
+        return clip.speedx(factor)
